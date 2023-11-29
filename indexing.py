@@ -3,6 +3,7 @@ from whoosh.fields import Schema, TEXT, ID
 from whoosh.qparser import QueryParser
 
 class Indexer:
+    
     def __init__(self, index_dir):
         self.index_dir = index_dir
         self.schema = Schema(url=ID(stored=True, unique=True), title=TEXT(stored=True), teaser=TEXT(stored=True), content=TEXT)
