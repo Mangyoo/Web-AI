@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Your Flask App</title>
+    <!-- Include jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+</head>
+<body>
+    <form id="searchForm" action="/search" method="get">
+        <label for="q">Search:</label>
+        <input type="text" id="q" name="q">
+        <input type="submit" value="Search">
+    </form>
+    <div id="searchResults"></div>
+    <script>
+        $(document).ready(function() {
+            $("#searchForm").submit(function(event) {
+                event.preventDefault();
+                var formData = $(this).serialize();
+                $.get('/search', formData, function(response) {
+                    displayResults(response);
+                });
+            });
+
+            function displayResults(results) {
+                var resultHtml = "<ul>";
+                results.forEach(function(result) {
+                    resultHtml += "<li><a href='" + result['url'] + "'>" + result['title'] + "</a><br>" + result['teaser'] + "</li>";
+                });
+                resultHtml += "</ul>";
+                $("#searchResults").html(resultHtml);
+            }
+        });
+    </script>
+</body>
+</html>
