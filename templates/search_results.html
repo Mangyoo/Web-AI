@@ -1,0 +1,12 @@
+{% if search_results %}
+<ul class="list-group">
+    {% for result in search_results %}
+        <li class="list-group-item">
+            <a href="{{ result['url'] }}" class="text-decoration-none">{{ result['title'] }}</a>
+            <p class="mb-1">{{ result['teaser'] }}</p>
+        </li>
+    {% endfor %}
+</ul>
+{% elif message %}
+    <div class="alert alert-info" role="alert">{{ message }}</div>
+{% endif %}
