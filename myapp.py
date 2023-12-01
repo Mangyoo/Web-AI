@@ -28,6 +28,7 @@ def search():
     #c1 = searcher.corrector("content")
     #c2 = spelling.ListCorrector(word_list)
     #corrector = MultiCorrector([c1, c2])
+    
     if query:
         web_crawler.run_crawler()
         search_results = indexer.search(query)
