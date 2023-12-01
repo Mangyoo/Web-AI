@@ -1,7 +1,6 @@
 from flask import Flask, render_template, request, jsonify
 from crawler import WebCrawler
 from indexing import Indexer
-from whoosh.spelling import ListCorrector, MultiCorrector
 
 app = Flask(__name__, template_folder="templates")
 index_dir = "index_dir"
@@ -24,11 +23,6 @@ def home():
 @app.route('/search')
 def search():
     query = request.args.get('q', '').split()
-    #corrector = ListCorrector(word_list)
-    #c1 = searcher.corrector("content")
-    #c2 = spelling.ListCorrector(word_list)
-    #corrector = MultiCorrector([c1, c2])
-    
     if query:
         web_crawler.run_crawler()
         search_results = indexer.search(query)
