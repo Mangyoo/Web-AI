@@ -27,7 +27,7 @@
         document.getElementById('searchForm').addEventListener('submit', function(event) {
             event.preventDefault();
             const q=document.getElementById("q").value;
-            fetch(`/search?q=${q}`)
+            fetch(`{{ search_url }}?q=${q}`)
             .then(response => response.json())
             .then(data => {
                 document.getElementById('searchResults').innerHTML = data.result_html;
