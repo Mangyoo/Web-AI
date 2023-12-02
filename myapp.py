@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, jsonify
+from flask import Flask, render_template, request, jsonify, url_for
 from crawler import WebCrawler
 from indexing import Indexer
 
@@ -10,15 +10,8 @@ word_list = []
 
 @app.route('/')
 def home():
-    return render_template('index.html')
+    return render_template('index.html', search_url=url_for("search"))
 
-    """
-    <form action="/search" method="get" style="margin-top: 20px; text-align: center;">
-    <label for="q" style="font-size: 18px; margin-right: 10px;">Search:</label>
-    <input type="text" id="q" name="q" style="padding: 8px; font-size: 16px; border: 1px solid #ccc; border-radius: 4px;">
-    <input type="submit" value="Search" style="padding: 8px 16px; font-size: 16px; background-color: #4CAF50; color: white; border: none; border-radius: 4px; cursor: pointer;">
-    </form>
-    """
 
 @app.route('/search')
 def search():
