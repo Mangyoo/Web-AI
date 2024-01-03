@@ -23,6 +23,11 @@ def search():
         return jsonify({'result_html': result_html})
     else:
         return jsonify({'result_html': 'Please enter a search query.'})
+
+import traceback
+@app.errorhandler(500)
+def internal_error(exception):
+   return "<pre>"+traceback.format_exc()+"</pre>"
     
 
 if __name__ == '__main__':
