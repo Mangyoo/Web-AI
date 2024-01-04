@@ -1,11 +1,18 @@
 import csv
 from sqlalchemy.exc import IntegrityError
 from models import Movie, MovieGenre, Link, Tag
+from flask_sqlalchemy import SQLAlchemy
 
 def check_and_read_data(db):
     # check if we have movies in the database
     # read data if the database is empty
     if Movie.query.count() == 0:
+        # Read links from 'links.csv' outside the loop
+        links_data = list(csv.reader(open('recommender_base_with_js/data/links.csv', newline='', encoding='utf8'), delimiter=','))
+
+        # Read tags from 'tags.csv' outside the loop
+        tags_data = list(csv.reader(open('recommender_base_with_js/data/tags.csv', newline='', encoding='utf8'), delimiter=','))
+
         # read movies from csv
         with open('recommender_base_with_js/data/movies.csv', newline='', encoding='utf8') as csvfile:
             reader = csv.reader(csvfile, delimiter=',')
@@ -24,17 +31,15 @@ def check_and_read_data(db):
                             movie_genre = MovieGenre(movie_id=id, genre=genre)
                             db.session.add(movie_genre)
 
-                        # Reading links from 'links.csv'
-                        link_row = next(csv.reader(open('recommender_base_with_js/data/links.csv', newline='', encoding='utf8'), delimiter=','))
-                        imdb_id = link_row[1] if link_row[0] == id else None
+                        # Retrieve IMDb ID from the pre-read data
+                        link_row = next((link for link in links_data if link[0] == id), None)
+                        imdb_id = link_row[1] if link_row else None
                         link = Link(movie_id=id, imdb_id=imdb_id)
                         db.session.add(link)
 
-                        # Reading tags from 'tags.csv'
-                        tag_row = next(csv.reader(open('recommender_base_with_js/data/tags.csv', newline='', encoding='utf8'), delimiter=','))
-                        tag_user_id = tag_row[0]
-                        tag_movie_id = tag_row[1]
-                        tag = Tag(movie_id=id, tag=tag_row[2] if tag_movie_id == id else None)
+                        # Retrieve tags from the pre-read data
+                        tag_row = next((tag for tag in tags_data if tag[1] == id), None)
+                        tag = Tag(movie_id=id, tag=tag_row[2] if tag_row else None)
                         db.session.add(tag)
 
                         db.session.commit()  # save data to the database
