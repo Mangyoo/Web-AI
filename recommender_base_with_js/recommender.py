@@ -3,7 +3,7 @@
 from flask import Flask, render_template, request
 from flask_user import login_required, UserManager, current_user
 
-from models import db, User, Movie, MovieGenre
+from models import db, User, Movie, MovieGenre, Link, Tag 
 from read_data import check_and_read_data
 
 # import sleep from python
@@ -63,7 +63,7 @@ def movies_page():
     # String-based templates
 
     # first 10 movies
-    movies = Movie.query.limit(10).all()
+    movies = Movie.query.limit(100).all()
 
     # only Romance movies
     # movies = Movie.query.filter(Movie.genres.any(MovieGenre.genre == 'Romance')).limit(10).all()
