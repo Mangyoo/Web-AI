@@ -1,6 +1,6 @@
 import csv
 from sqlalchemy.exc import IntegrityError
-from models import Movie, MovieGenre, Link, Tag
+from models import Movie, MovieGenre, Link, Tag, Rating
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
 def check_and_read_data(db):
@@ -12,6 +12,8 @@ def check_and_read_data(db):
         # Read tags from 'tags.csv' outside the loop
         print(links_data)
         tags_data = csv_reader('data/tags.csv',1)
+        ratings_data = csv_reader('data/ratings.csv',2)
+        #read ratings from 'ratings.csv' outside the loop
         # read movies from csv
         with open('data/movies.csv', newline='', encoding='utf8') as csvfile:
             reader = csv.reader(csvfile, delimiter=',')
@@ -49,6 +51,18 @@ def check_and_read_data(db):
                         except IntegrityError as e: 
                             print("Ignoring duplicate tag: " + tag_row[2]) 
                             db.session.rollback()
+                #Retrieve ratings from the pre-read data
+                if id in ratings_data:
+                    for rating_row in ratings_data[id]:
+                        
+                        rating = Rating(user_id=rating_row[0], movie_id=id, rating=rating_row[2], timestamp=datetime.utcfromtimestamp(int(tag_row[3])))
+                        db.session.add(rating)
+                        db.session.commit()
+
+                #next one: recreate this model with the previous model for faster duplicate elimination
+                
+                        
+                            
 
 
 def csv_reader(path:str, movie_id_index):
@@ -56,7 +70,12 @@ def csv_reader(path:str, movie_id_index):
     next(reader, None)
     data = dict()
     for row in reader:
-        key = int(row[movie_id_index])
+        try:
+            key = int(float(row[movie_id_index]))
+        except ValueError:
+            # Handle the case where the value cannot be converted to int
+            print(f"Skipping invalid key: {row[movie_id_index]}")
+            continue
         if not key in data:
             data[key] = list()
         data[key].append(row)

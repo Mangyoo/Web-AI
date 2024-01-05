@@ -28,6 +28,8 @@ class Movie(db.Model):
     genres = db.relationship('MovieGenre', backref='movie', lazy=True)
     links = db.relationship('Link', backref='movie', lazy=True)
     tags = db.relationship('Tag', backref='movie', lazy=True)
+    ratings = db.relationship('Rating', backref='movie', lazy=True)
+
 
 
 class MovieGenre(db.Model):
@@ -52,3 +54,14 @@ class Tag(db.Model):
     movie_id = db.Column(db.Integer, db.ForeignKey('movies.id'), nullable=False)
     tag = db.Column(db.String(255), nullable=False, unique=True)
     timestamp = db.Column(db.DateTime(), nullable=False)
+    
+    
+
+class Rating(db.Model):
+    __tablename__ = 'ratings'
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, nullable=False)
+    movie_id = db.Column(db.Integer, db.ForeignKey('movies.id'), nullable=False)
+    rating = db.Column(db.Integer, nullable=False)
+    timestamp = db.Column(db.DateTime(), nullable=False)
+    

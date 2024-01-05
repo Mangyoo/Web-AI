@@ -3,7 +3,7 @@
 from flask import Flask, render_template, request
 from flask_user import login_required, UserManager, current_user
 
-from models import db, User, Movie, MovieGenre, Link, Tag 
+from models import db, User, Movie, MovieGenre, Link, Tag, Rating
 from read_data import check_and_read_data
 
 # import sleep from python
