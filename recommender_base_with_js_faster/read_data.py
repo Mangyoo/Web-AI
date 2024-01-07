@@ -99,9 +99,9 @@ def check_and_read_data(db):
                         user_id = row[0]
                         movie_id = row[1]
                         rating = row[2]
-                        timestamp = datetime.utcfromtimestamp(int(row[3]))
                         
-                        ratings = Rating(user_id = user_id, movie_id = movie_id, rating=rating, timestamp = timestamp )
+                        
+                        ratings = Rating(user_id = user_id, movie_id = movie_id, rating=rating )
                         db.session.add(ratings)
                         db.session.commit()
                        

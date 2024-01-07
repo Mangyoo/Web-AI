@@ -63,5 +63,8 @@ class Rating(db.Model):
     user_id = db.Column(db.Integer, nullable=False)
     movie_id = db.Column(db.Integer, db.ForeignKey('movies.id'), nullable=False)
     rating = db.Column(db.Integer, nullable=False)
-    timestamp = db.Column(db.DateTime(), nullable=False)
     
+
+
+
+       

@@ -80,10 +80,21 @@ def movies_page():
 @app.route('/rate', methods=['POST'])
 @login_required  # User must be authenticated
 def rate():
-    movieid = request.form.get('movieid')
-    rating = request.form.get('rating')
     userid = current_user.id
+    movieid = request.form.get('movieid')
+    rating = float(request.form.get('rating'))
+    
+    #check for existing rating and overwrite it
+    existing_rating = Rating.query.filter_by(user_id=userid, movie_id=movieid).first()
+    if existing_rating:
+        existing_rating.rating = rating
+    else:
+        new_rating = Rating(user_id=userid, movie_id=movieid, rating=rating)
+        db.session.add(new_rating)
+
+    db.session.commit()
     print("Rate {} for {} by {}".format(rating, movieid, userid))
+
     return render_template("rated.html", rating=rating)
 
 
