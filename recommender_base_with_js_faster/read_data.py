@@ -1,11 +1,36 @@
 import csv
 from sqlalchemy.exc import IntegrityError
-from models import Movie, MovieGenre, Link, Tag, Rating
+from models import Movie, MovieGenre, Link, Tag, Rating, User
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
 def check_and_read_data(db):
     # check if we have movies in the database
     # read data if the database is empty
+    if User.query.count() == 0:
+        # read movies from csv
+        with open('data/ratings.csv', newline='', encoding='utf8') as csvfile:
+            reader = csv.reader(csvfile, delimiter=',')
+            count = 0
+            for row in reader:
+                if count > 0:
+                    
+                    try:   
+                        user_id = row[0]
+                        username = "user"+user_id
+                        
+                        
+                        users = User(id = user_id, username=username)
+                        db.session.add(users)
+                        db.session.commit()
+                    except IntegrityError:
+                        print("Ignoring duplicate user: " + user_id)
+                        db.session.rollback()
+                        pass   
+                    
+                count += 1
+                if count % 100 == 0:
+                    print(count, "users read") 
+
     if Movie.query.count() == 0:
         # Read links from 'links.csv' outside the loop
         #links_data = csv_reader('data/links.csv',0)
@@ -89,7 +114,7 @@ def check_and_read_data(db):
                     print(count, "tags read")
     if Rating.query.count() == 0:
         # read movies from csv
-        with open('data/ratings.csv', newline='', encoding='utf8') as csvfile:
+        with open('data/selected_ratings.csv', newline='', encoding='utf8') as csvfile:
             reader = csv.reader(csvfile, delimiter=',')
             count = 0
             for row in reader:
