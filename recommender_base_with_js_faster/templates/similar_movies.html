@@ -1,0 +1,12 @@
+{% extends "flask_user_layout.html" %}
+{% block content %}
+<div class="container">
+    <h2>Similar Movies for Movie {{ movie_id }}</h2>
+
+    {% for m in similar_movies %}
+        <div class="panel panel-default">
+            <!-- Display movie details as you did in movies.html -->
+        </div>
+    {% endfor %}
+</div>
+{% endblock %}

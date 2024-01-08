@@ -67,14 +67,12 @@ def collaborative_filtering(movie_id):
     ratings_df = pd.DataFrame([(rating.user_id, rating.movie_id, rating.rating) for rating in ratings],
                                columns=['user_id', 'movie_id', 'rating'])
     
-    print(ratings_df.head(20))
-    print("AAAAAA")
+    
 
     # Create a user-item matrix for collaborative filtering
     Collab_df = ratings_df.pivot_table(index='movie_id', columns='user_id', values='rating')
     Collab_df = Collab_df.fillna(0)
-    print(Collab_df.head(20))
-    print("AAAAAA")
+    
 
     # Take the latent vectors for the selected movie from the collaborative matrix
     a_2 = np.array(Collab_df.loc[movie_id]).reshape(1, -1)
@@ -90,11 +88,49 @@ def collaborative_filtering(movie_id):
 
     # Sort it based on collaborative filtering similarity
     similar_collab.sort_values(by = 'collaborative', ascending=False, inplace=True)
-    print(similar_collab.head(20))
-    print("AAAAAA")
+    
+    
     # Return the top 10 similar movies
     top_similar_movies = similar_collab.index[1:11]  # excluding the movie itself
     return top_similar_movies
+
+def user_comparison(user_id):
+    # Fetch all ratings from the database using the ORM
+    ratings = Rating.query.all()
+
+    # Convert the list of Rating objects to a DataFrame
+    ratings_df = pd.DataFrame([(rating.user_id, rating.movie_id, rating.rating) for rating in ratings],
+                               columns=['user_id', 'movie_id', 'rating'])
+    
+    
+
+    # Create a user-item matrix for collaborative filtering
+    Collab_df = ratings_df.pivot_table(index='user_id', columns='movie_id', values='rating')
+    Collab_df = Collab_df.fillna(0)
+
+    print(Collab_df.head(10))
+    
+
+    # Take the latent vectors for the selected movie from the collaborative matrix
+    a_2 = np.array(Collab_df.loc[user_id]).reshape(1, -1)
+
+    # Calculate the similarity of this movie with the others in the list
+    score_2 = cosine_similarity(Collab_df, a_2).reshape(-1)
+
+    # Form a data frame of similar movies
+    dictDf = {'collaborative': score_2}
+    similar_collab = pd.DataFrame(dictDf, index=Collab_df.index)
+
+    
+
+    # Sort it based on collaborative filtering similarity
+    similar_collab.sort_values(by = 'collaborative', ascending=False, inplace=True)
+    
+    
+    # Return the top 10 similar movies
+    top_similar_movies = similar_collab.index[1:11]  # excluding the movie itself
+    return top_similar_movies
+
 
 
 
@@ -107,11 +143,9 @@ def movies_page():
     # first 10 movies
     movies = Movie.query.limit(100).all()
 
-    movie_id_to_recommend = 1
-    top_similar_movies = collaborative_filtering(movie_id_to_recommend)
-    recommended_movies = Movie.query.filter(Movie.id.in_(top_similar_movies)).all()
+    
 
-    return render_template("movies.html", movies=movies, recommended_movies=recommended_movies)
+    return render_template("movies.html", movies=movies)
 
 
     # only Romance movies
@@ -123,7 +157,33 @@ def movies_page():
     #     .filter(Movie.genres.any(MovieGenre.genre == 'Horror')) \
     #     .limit(10).all()
 
+@app.route('/recommender')
+@login_required
+def recommender():
     
+     
+    current_movie = request.args.get('movie_id')
+    current_movie = int(current_movie)
+    sim_movs = collaborative_filtering(current_movie)
+    
+
+    movies = Movie.query.filter(Movie.id.in_(sim_movs)).all()
+
+    return render_template("movies.html", movies = movies)  
+
+@app.route('/userrecommender')
+@login_required
+def userrecommender():
+    if Rating.query.filter_by(user_id=current_user.id).count() >=10:  
+        user_id = current_user.id
+        user_id = int(user_id)
+        sim_movs = user_comparison(user_id)
+
+        movies = Movie.query.filter(Movie.id.in_(sim_movs)).all()
+
+        return render_template("userrecommendations.html", movies = movies)  
+    else:
+        return render_template("no10movies.html")
 
 
 @app.route('/rate', methods=['POST'])
@@ -146,7 +206,7 @@ def rate():
 
     return render_template("rated.html", rating=rating)
 
-print(collaborative_filtering(1))
+#print(collaborative_filtering(1))
 
 # Start development web server
 if __name__ == '__main__':

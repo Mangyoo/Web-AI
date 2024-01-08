@@ -8,7 +8,7 @@ def check_and_read_data(db):
     # read data if the database is empty
     if User.query.count() == 0:
         # read movies from csv
-        with open('data/ratings.csv', newline='', encoding='utf8') as csvfile:
+        with open('data/user_init_ratings.csv', newline='', encoding='utf8') as csvfile:
             reader = csv.reader(csvfile, delimiter=',')
             count = 0
             for row in reader:
