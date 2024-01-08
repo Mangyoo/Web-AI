@@ -114,7 +114,7 @@ def check_and_read_data(db):
                     print(count, "tags read")
     if Rating.query.count() == 0:
         # read movies from csv
-        with open('data/selected_ratings.csv', newline='', encoding='utf8') as csvfile:
+        with open('data/ratings.csv', newline='', encoding='utf8') as csvfile:
             reader = csv.reader(csvfile, delimiter=',')
             count = 0
             for row in reader:
