@@ -154,43 +154,40 @@ def home_page():
 
 # The Members page is only accessible to authenticated users via the @login_required decorator
 @app.route('/movies')
-@login_required  # User must be authenticated
+@login_required
 def movies_page():
-    movies = Movie.query.all()
-    
+    page = request.args.get('page', 1, type=int)  # Get the page parameter from the request, default to 1 if not provided
+    per_page = 10  # Number of movies per page
+
+    movies = Movie.query.paginate(page=page, per_page=per_page, error_out=False)
 
     all_genres = db.session.query(MovieGenre.genre).distinct().all()
     all_genres = [genre[0] for genre in all_genres]
     all_genres = [element.rstrip(',') for element in all_genres]
 
     selected_genres = request.args.getlist('genres[]')
-    
-    
+
     search_request = request.args.get('search')
     title = "All Movies"
 
     if search_request:
-        
-        searched_movies = fuzzy_search_movies(search_request, movies)
+        searched_movies = fuzzy_search_movies(search_request, movies.items)
         if len(searched_movies) > 0:
-            
-            return render_template("movies.html", movies=searched_movies, all_genres=all_genres, title="Search Results")
+            return render_template("filtermovies.html", movies=searched_movies, all_genres=all_genres, title="Search Results")
         else:
             return render_template("nosearchresults.html")
-    
-    
+
     if selected_genres:
         genre_movies = Movie.query.filter(Movie.genres.any(MovieGenre.genre == selected_genres[0])).all()
         for g in selected_genres[1:]:
             joiner_movies = Movie.query.filter(Movie.genres.any(MovieGenre.genre == g)).all()
             genre_movies = list(set(genre_movies) & set(joiner_movies))
-        if len(genre_movies) >0:
-            return render_template("movies.html", movies=genre_movies, all_genres=all_genres, title="Filtered by Genres")
+        if len(genre_movies) > 0:
+            return render_template("filtermovies.html", movies=genre_movies, all_genres=all_genres, title="Filtered by Genres")
         else:
-            return render_template("movies.html", movies=genre_movies, all_genres=all_genres, title="No Movies match your filtered Genres")
+            return render_template("filtermovies.html", movies=genre_movies, all_genres=all_genres, title="No Movies match your filtered Genres")
 
-    return render_template("movies.html", movies=movies, all_genres=all_genres, title="All Movies")
-
+    return render_template("movies.html", movies=movies.items, all_genres=all_genres, title="All Movies", pagination=movies)
 
 
 @app.route('/recommender')
