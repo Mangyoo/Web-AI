@@ -1,9 +1,11 @@
+## channel.py - a simple message channel
+##
+
 from flask import Flask, request, render_template, jsonify
+from eliza_function import eliza_response
 import json
 import requests
 import datetime
-import random 
-
 
 # Class-based application configuration
 class ConfigClass(object):
@@ -19,13 +21,11 @@ app.app_context().push()  # create an app context before initializing db
 
 HUB_URL = 'https://temporary-server.de'
 HUB_AUTHKEY = 'Crr-K3d-2N'
-CHANNEL_AUTHKEY = '186069'
-CHANNEL_NAME = "Number Guessing Bot"
-CHANNEL_ENDPOINT = "http://vm146.rz.uni-osnabrueck.de/user103/numberguessingbot.wsgi/"
-CHANNEL_FILE = 'messages2.json'
-randomtbg = random.randint(1,100)
-numberguesses = 0 
-default_message_displayed = True
+CHANNEL_AUTHKEY = '22334466'
+CHANNEL_NAME = "Talk to Eliza"
+CHANNEL_ENDPOINT = "http://vm146.rz.uni-osnabrueck.de/user103/channel4eliza.wsgi/"
+CHANNEL_FILE = 'messages.json'
+#default_message_displayed = True
 
 @app.cli.command('register')
 def register_command():
@@ -63,34 +63,26 @@ def health_check():
 @app.route('/', methods=['GET'])
 def home_page():
     global default_message_displayed 
-
     if not check_authorization(request):
         return "Invalid authorization", 400
-
-    # Fetch channels from server
     messages = read_messages()
-
-    # Display the default welcome message only if it hasn't been displayed before
-    if default_message_displayed:
-        default_message = {'content': 'Welcome to the channel! Try guessing my random number between 1 and 100!', 'sender': 'Bot', 'timestamp': str(datetime.datetime.now())}
+    #if default_message_displayed:
+    if not messages:
+        default_message = {'content': 'Welcome, I am Eliza your psychiatrist!', 'sender': 'Eliza', 'timestamp': str(datetime.datetime.now())}
         messages.append(default_message)
-        default_message_displayed = False  # Set the flag to indicate the default message has been displayed
-
-    # Return messages including the default message
-    save_messages(messages)  # Save messages after adding the default message
-    default_message_displayed = True  # Reset the flag to True for the next request
+    #   default_message_displayed = False 
+    save_messages(messages)
+    #default_message_displayed = True
+    # fetch channels from server
     return jsonify(messages), 200
 
 # POST: Send a message
 @app.route('/', methods=['POST'])
 def send_message():
-    global randomtbg, default_message_displayed, numberguesses
-    
     # fetch channels from server
     # check authorization header
     if not check_authorization(request):
         return "Invalid authorization", 400
-
     # check if message is present
     message = request.json
     if not message:
@@ -101,38 +93,22 @@ def send_message():
         return "No sender", 400
     if not 'timestamp' in message:
         return "No timestamp", 400
-
-    # Reverse the content of the message
-    reversed_content = message['content'][::-1]
-
-    # add message to messages with reversed content
+    # add message to messages
     messages = read_messages()
-
-    # Check if the default message has been displayed before adding it
-    if default_message_displayed:
-        default_message = {'content': 'Welcome to the channel! Try guessing my random number between 1 and 100!', 'sender': 'Bot', 'timestamp': str(datetime.datetime.now())}
-        messages.append(default_message)
-        default_message_displayed = False  # Set the flag to indicate the default message has been displayed
-
-    messages.append({'content': message['content'], 'sender': message['sender'], 'timestamp': message['timestamp']})
-    number = int(message['content'])
-    if randomtbg == number:
-        messages.append({'content':"That's my Number! Nice guessing!", 'sender':'Number Guessing Bot', 'timestamp':message['timestamp']})
-        randomtbg = random.randint(1, 100)
-        numberguessesd = str(numberguesses)
-        messages.append({'content':"You needed " + numberguessesd + " tries! Try guessing another number now!", 'sender':'Number Guessing Bot', 'timestamp':message['timestamp']})
-        numberguesses = 0
-        save_messages(messages)        
-    else:
-        if randomtbg >= number:
-            messages.append({'content':"Wrong! My number is higher!", 'sender':'Number Guessing Bot', 'timestamp':message['timestamp']})
-            numberguesses +=1
-            save_messages(messages)
-        else: 
-            messages.append({'content':"Wrong! My number is lower!", 'sender':'Number Guessing Bot', 'timestamp':message['timestamp']}) 
-            numberguesses +=1
-            save_messages(messages)
-
+    #if not messages:
+        #eliza_message = {'content': 'Welcome, I am Eliza your psychiatrist!', 'sender': "Eliza", 'timestamp': message['timestamp']}
+        #messages.append(eliza_message)
+    
+    # Process user message
+    user_message = {'content': message['content'], 'sender': message['sender'], 'timestamp': message['timestamp']}
+    messages.append(user_message)
+    
+    # Get Eliza's response
+    eliza_reply = eliza_response(message['content'])
+    print(str(message['content']))
+    eliza_reply_message = {'content': eliza_reply, 'sender': "Eliza", 'timestamp': message['timestamp']}
+    messages.append(eliza_reply_message)
+    save_messages(messages)
     return "OK", 200
 
 def read_messages():
@@ -155,4 +131,4 @@ def save_messages(messages):
 
 # Start development web server
 if __name__ == '__main__':
-    app.run(port=5004, debug=True)
+    app.run(port=5003, debug=True)

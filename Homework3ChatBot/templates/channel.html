@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Channel {{ channel.name }}</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f9f9f9;
+        }
+
+        #header {
+            background-color: #333;
+            color: #fff;
+            padding: 10px;
+        }
+
+        #container {
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        #usernameDisplay {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            color: #fff;
+        }
+
+        #changeUsernameButton {
+            position: absolute;
+            top: 40px; /* Adjust this value as needed */
+            right: 10px;
+            padding: 5px 10px;
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+
+        h1 {
+            color: #333;
+        }
+
+        h2 {
+            color: #666;
+        }
+
+        p {
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        input[type="text"], input[type="submit"] {
+            padding: 8px;
+            margin-bottom: 10px;
+            border-radius: 3px;
+            border: 1px solid #ccc;
+        }
+
+        input[type="submit"] {
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            cursor: pointer;
+        }
+
+        input[type="submit"]:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+
+<div id="header">
+    <p>The distributed messenger. <a href="{{ url_for('home_page') }}" style="color: #fff;">List of channels.</a></p>
+</div>
+
+<div id="container">
+    {% if channel %}
+        <h1>Channel {{ channel.name }}</h1>
+
+        <div id="usernameDisplay"></div>
+        <button id="changeUsernameButton" onclick="getUsername()">Change Username</button>
+
+        {% for message in messages %}
+            <h2>{{ message.sender }}</h2>
+            <p>{{ message.content }}</p>
+            <p style="font-size: 12px; color: #666;">{{ message.timestamp }}</p>
+        {% endfor %}
+    {% else %}
+        <h1>Channel not found</h1>
+    {% endif %}
+
+    <form action="post" method="post">
+        <input type="hidden" name="channel" value="{{ channel.endpoint | urlencode }}">
+        <input type="hidden" name="sender" id="sender">
+        <label for="content">Message:</label><br>
+        <input type="text" name="content" id="content"> <br>
+        <input type="submit" value="Post">
+    </form>
+</div>
+
+<script>
+    // Function to get username if not already set
+    function getUsername() {
+        var username = localStorage.getItem("username");
+        if (!username) {
+            username = prompt("Please enter your username:");
+            if (username != null && username != "") {
+                localStorage.setItem("username", username);
+            } else {
+                // If username is not set, return null
+                return null;
+            }
+        }
+        return username;
+    }
+
+    // Function to initialize the username display
+    function initializeUsernameDisplay() {
+        var username = getUsername();
+        if (!username) {
+            // If username is not set, display an error
+            alert("Error: Username not set!");
+            return;
+        }
+        document.getElementById("usernameDisplay").innerText = "Username: " + username;
+        document.getElementById("sender").value = username;
+    }
+
+    // Function to handle the Change Username button click event
+    function handleChangeUsername() {
+        var username = prompt("Please enter your new username:");
+        if (username != null && username != "") {
+            localStorage.setItem("username", username);
+            initializeUsernameDisplay();
+        }
+    }
+
+    window.onload = function () {
+        initializeUsernameDisplay();
+        document.getElementById("changeUsernameButton").onclick = handleChangeUsername;
+    };
+</script>
+
+</body>
+</html>
